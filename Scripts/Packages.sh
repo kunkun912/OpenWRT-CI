@@ -82,6 +82,8 @@ UPDATE_PACKAGE "timecontrol" "sirpdboy/luci-app-timecontrol" "main"
 UPDATE_PACKAGE "viking" "VIKINGYFY/packages" "main" "" "gecoosac luci-app-timewol luci-app-wolultra"
 UPDATE_PACKAGE "vnt" "lmq8267/luci-app-vnt" "main"
 UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
+UPDATE_PACKAGE "vnt" "lmq8267/luci-app-vnt" "main"
++UPDATE_PACKAGE "uugamebooster" "lmq8267/luci-app-uugamebooster" "master" "pkg"
 UPDATE_PACKAGE "luci-app-natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
 
 #更新软件包版本

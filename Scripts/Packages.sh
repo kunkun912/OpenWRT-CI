@@ -67,7 +67,7 @@ UPDATE_PACKAGE "qmodem" "FUjr/QModem" "main"
 UPDATE_PACKAGE "viking" "VIKINGYFY/packages" "main" "" "axonhub gecoosac sing-box luci-app-homeproxy luci-app-timewol luci-app-wolplus luci-app-wolultra"
 UPDATE_PACKAGE "vnt" "lmq8267/luci-app-vnt" "main"
 UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
-UPDATE_PACKAGE "uugamebooster" "lmq8267/luci-app-uugamebooster" "master" "pkg"
+UPDATE_PACKAGE "uugamebooster" "xiaodoudou/luci-app-uugamebooster" "v2.1" "pkg"
 UPDATE_PACKAGE "luci-app-natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
 
 UPDATE_PACKAGE "diskman" "sbwml/luci-app-diskman" "main"

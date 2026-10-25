@@ -72,6 +72,10 @@ UPDATE_PACKAGE "qmodem" "FUjr/QModem" "main"
 UPDATE_PACKAGE "viking" "VIKINGYFY/packages" "main" "" "axonhub gecoosac sing-box luci-app-homeproxy luci-app-timewol luci-app-wolplus luci-app-wolultra"
 UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
 UPDATE_PACKAGE "uugamebooster" "xiaodoudou/luci-app-uugamebooster" "v2.1" "pkg"
+# 修复 luci-app-uugamebooster 在 apk 打包及 rootfs 离线安装阶段 postinst chmod 抛错导致构建中断
+find ./ -maxdepth 3 -type f -wholename "*/luci-app-uugamebooster/Makefile" -exec sed -i 's|chmod +x /etc/init.d/uuplugin|[ -f /etc/init.d/uuplugin ] \&\& chmod +x /etc/init.d/uuplugin \|\| true|g' {} +
+find ./ -maxdepth 3 -type f -wholename "*/luci-app-uugamebooster/Makefile" -exec sed -i 's|chmod +x /usr/libexec/uuplugin/\*|[ -d /usr/libexec/uuplugin ] \&\& chmod +x /usr/libexec/uuplugin/\* 2>/dev/null \|\| true|g' {} +
+
 UPDATE_PACKAGE "luci-app-natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
 # 修复 luci-app-natpierce 缺少 htdocs 目录导致 cp: cannot stat './htdocs/*': No such file or directory 编译报错
 find ./ -maxdepth 3 -type d -name "luci-app-natpierce" -exec mkdir -p {}/htdocs \; -exec touch {}/htdocs/.keep \;

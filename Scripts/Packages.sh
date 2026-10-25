@@ -31,13 +31,17 @@ UPDATE_PACKAGE() {
 		fi
 	done
 
-	# 克隆 GitHub 仓库
-	git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" $REPO_PATH
+	# 临时克隆目录，防止提取同名包时被随后的 rm -rf 误杀 (修复 uugamebooster / natpierce 等同名包被删问题)
+	local PKG_TMP_DIR="./_pkg_tmp_$REPO_NAME"
+	rm -rf "$PKG_TMP_DIR"
+	git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" "$PKG_TMP_DIR"
 
-	# 处理克隆的仓库
 	if [[ "$PKG_SPECIAL" == "pkg" ]]; then
-		find $REPO_PATH/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
-		rm -rf $REPO_PATH
+		find "$PKG_TMP_DIR" -mindepth 1 -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
+		rm -rf "$PKG_TMP_DIR"
+	else
+		rm -rf "$REPO_PATH"
+		mv -f "$PKG_TMP_DIR" "$REPO_PATH"
 	fi
 }
 

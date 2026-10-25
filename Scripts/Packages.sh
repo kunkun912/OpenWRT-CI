@@ -73,6 +73,10 @@ UPDATE_PACKAGE "vnt" "lmq8267/luci-app-vnt" "main"
 UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
 UPDATE_PACKAGE "uugamebooster" "xiaodoudou/luci-app-uugamebooster" "v2.1" "pkg"
 UPDATE_PACKAGE "luci-app-natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
+# 修复 luci-app-natpierce 缺少 htdocs 目录导致 cp: cannot stat './htdocs/*': No such file or directory 编译报错
+find ./package/ -maxdepth 3 -type d -name "luci-app-natpierce" -exec mkdir -p {}/htdocs \; -exec touch {}/htdocs/.keep \;
+find ./package/ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(CP) \.\/htdocs\/\* \$(1)\/www\//d' {} +
+find ./package/ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(INSTALL_DIR) \$(1)\/www\//d' {} +
 
 UPDATE_PACKAGE "diskman" "sbwml/luci-app-diskman" "main"
 UPDATE_PACKAGE "mosdns" "sbwml/luci-app-mosdns" "v5" "" "v2dat"

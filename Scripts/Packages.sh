@@ -10,17 +10,14 @@ UPDATE_PACKAGE() {
 	local PKG_SPECIAL=$4
 	local PKG_LIST=("$PKG_NAME" $5)  # 第5个参数为自定义名称列表
 	local REPO_NAME=${PKG_REPO#*/}
-	local REPO_PATH="./package/$REPO_NAME"
 
 	echo " "
 
-	# 删除本地可能存在的不同名称的软件包
+	# 删除本地可能存在的不同名称的软件包 (feeds 目录位于上级 ../feeds/)
 	for NAME in "${PKG_LIST[@]}"; do
-		# 查找匹配的目录
 		echo "Search directory: $NAME"
-		local FOUND_DIRS=$(find ./feeds/luci/ ./feeds/packages/ -maxdepth 3 -type d -iname "*$NAME*" 2>/dev/null)
+		local FOUND_DIRS=$(find ../feeds/luci/ ../feeds/packages/ ./ -maxdepth 3 -type d -iname "*$NAME*" 2>/dev/null)
 
-		# 删除找到的目录
 		if [ -n "$FOUND_DIRS" ]; then
 			while read -r DIR; do
 				rm -rf "$DIR"
@@ -34,14 +31,18 @@ UPDATE_PACKAGE() {
 	# 临时克隆目录，防止提取同名包时被随后的 rm -rf 误杀 (修复 uugamebooster / natpierce 等同名包被删问题)
 	local PKG_TMP_DIR="./_pkg_tmp_$REPO_NAME"
 	rm -rf "$PKG_TMP_DIR"
-	git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" "$PKG_TMP_DIR"
+	if ! git clone --depth=1 --single-branch --branch $PKG_BRANCH "https://github.com/$PKG_REPO.git" "$PKG_TMP_DIR"; then
+		echo "Warning: git clone failed for $PKG_REPO ($PKG_BRANCH), skipping!"
+		rm -rf "$PKG_TMP_DIR"
+		return 0
+	fi
 
 	if [[ "$PKG_SPECIAL" == "pkg" ]]; then
-		find "$PKG_TMP_DIR" -mindepth 1 -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
+		find "$PKG_TMP_DIR" -mindepth 1 -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./ \;
 		rm -rf "$PKG_TMP_DIR"
 	else
-		rm -rf "$REPO_PATH"
-		mv -f "$PKG_TMP_DIR" "$REPO_PATH"
+		rm -rf "./$REPO_NAME"
+		mv -f "$PKG_TMP_DIR" "./$REPO_NAME"
 	fi
 }
 
@@ -69,14 +70,13 @@ UPDATE_PACKAGE "diskmanager" "4IceG/luci-app-mini-diskmanager" "main"
 UPDATE_PACKAGE "easytier" "EasyTier/luci-app-easytier" "main"
 UPDATE_PACKAGE "qmodem" "FUjr/QModem" "main"
 UPDATE_PACKAGE "viking" "VIKINGYFY/packages" "main" "" "axonhub gecoosac sing-box luci-app-homeproxy luci-app-timewol luci-app-wolplus luci-app-wolultra"
-UPDATE_PACKAGE "vnt" "lmq8267/luci-app-vnt" "main"
 UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
 UPDATE_PACKAGE "uugamebooster" "xiaodoudou/luci-app-uugamebooster" "v2.1" "pkg"
 UPDATE_PACKAGE "luci-app-natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
 # 修复 luci-app-natpierce 缺少 htdocs 目录导致 cp: cannot stat './htdocs/*': No such file or directory 编译报错
-find ./package/ -maxdepth 3 -type d -name "luci-app-natpierce" -exec mkdir -p {}/htdocs \; -exec touch {}/htdocs/.keep \;
-find ./package/ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(CP) \.\/htdocs\/\* \$(1)\/www\//d' {} +
-find ./package/ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(INSTALL_DIR) \$(1)\/www\//d' {} +
+find ./ -maxdepth 3 -type d -name "luci-app-natpierce" -exec mkdir -p {}/htdocs \; -exec touch {}/htdocs/.keep \;
+find ./ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(CP) \.\/htdocs\/\* \$(1)\/www\//d' {} +
+find ./ -maxdepth 3 -type f -wholename "*/luci-app-natpierce/Makefile" -exec sed -i '/\$(INSTALL_DIR) \$(1)\/www\//d' {} +
 
 UPDATE_PACKAGE "diskman" "sbwml/luci-app-diskman" "main"
 UPDATE_PACKAGE "mosdns" "sbwml/luci-app-mosdns" "v5" "" "v2dat"
@@ -107,7 +107,7 @@ UPDATE_PACKAGE "qmodem-generic" "LianXia233/luci-app-qmodem-generic" "main"
 UPDATE_VERSION() {
 	local PKG_NAME=$1
 	local PKG_MARK=${2:-false}
-	local PKG_FILES=$(find ./package/ ./feeds/packages/ -maxdepth 3 -type f -wholename "*/$PKG_NAME/Makefile")
+	local PKG_FILES=$(find ./ ../feeds/packages/ -maxdepth 3 -type f -wholename "*/$PKG_NAME/Makefile")
 
 	if [ -z "$PKG_FILES" ]; then
 		echo "$PKG_NAME not found!"
@@ -151,4 +151,3 @@ UPDATE_VERSION() {
 if [ -f "$GITHUB_WORKSPACE/Scripts/PRIVATE.sh" ]; then
 	source "$GITHUB_WORKSPACE/Scripts/PRIVATE.sh"
 fi
-

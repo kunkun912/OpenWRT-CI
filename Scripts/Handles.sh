@@ -73,3 +73,10 @@ FIX "natpierce-htdocs" "$PACKAGE_PATH/luci-app-natpierce" sed -i \
 FIX "natpierce-postinst" "$PACKAGE_PATH/luci-app-natpierce" sed -i \
 	'/^define Package\/luci-app-natpierce\/postinst$/,/^endef$/d' \
 	"$PACKAGE_PATH/luci-app-natpierce/Makefile"
+
+#修正luci集合里的空主题名：上游feed快照写成 "+luci-theme- \"，会让package/install报 luci-theme- (no such package)
+for THEME_MAKEFILE in "$FEEDS_PATH"/luci/collections/*/Makefile; do
+	[ -f "$THEME_MAKEFILE" ] || continue
+	FIX "luci-theme-fix-$(basename "$(dirname "$THEME_MAKEFILE")")" "$(dirname "$THEME_MAKEFILE")" \
+		sed -i 's|+luci-theme- |+luci-theme-bootstrap |g' "$THEME_MAKEFILE"
+done

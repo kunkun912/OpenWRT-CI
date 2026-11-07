@@ -40,7 +40,7 @@ UPDATE_PACKAGE() {
 		# 直接提取后再 rm -rf $REPO_PATH 会把刚复制过去的目录一起删掉
 		local TMP_PATH="./package/.tmp-$REPO_NAME"
 		mv "$REPO_PATH" "$TMP_PATH"
-		find "$TMP_PATH"/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
+		find "$TMP_PATH"/*/ -maxdepth 3 -type d \( -name "$PKG_NAME" -o -name "luci-app-$PKG_NAME" \) -prune -exec cp -rf {} ./package \;
 		rm -rf "$TMP_PATH"
 	fi
 }

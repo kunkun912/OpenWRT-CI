@@ -62,33 +62,6 @@ Config/              每个系列的 .config 模板 + GENERAL.txt（所有系列
 
 ---
 
-## 本地编译（不想等 CI 排队的人）
-
-WSL2 里大概 40G 空间、40–60 分钟，全程一个文件夹装得下，删起来也方便：
-
-```bash
-# 拉上游源码
-git clone --depth=1 -b owrt https://github.com/VIKINGYFY/immortalwrt.git
-cd immortalwrt
-./scripts/feeds update -a && ./scripts/feeds install -a
-
-# 套用本仓库的脚本和配置
-bash ../OpenWRT-CI/Scripts/Packages.sh
-bash ../OpenWRT-CI/Scripts/Handles.sh
-cat ../OpenWRT-CI/Config/IPQ60XX-WIFI-YES.txt ../OpenWRT-CI/Config/GENERAL.txt > .config
-bash ../OpenWRT-CI/Scripts/Settings.sh
-
-make defconfig && make -j$(nproc)
-```
-
-**踩过的坑，全写进 `Handles.sh` 了**，省得你重踩一遍：
-
-- `luci-theme-` 空主题名 —— 上游 feed 把主题名写成空字符串，`make package/install` 直接报 no such package；
-- `libstdcpp6` —— 上游只有 `libstdcpp`，UU 插件的依赖名对不上；
-- 打包时的 `postinst` —— 在宿主机上 chmod / 跑脚本，目标文件不存在就整包编译失败。
-
----
-
 ## 上游与致谢
 
 - 源码：[VIKINGYFY/immortalwrt](https://github.com/VIKINGYFY/immortalwrt)（自用版）/ [immortalwrt/immortalwrt](https://github.com/immortalwrt/immortalwrt)（官方版）

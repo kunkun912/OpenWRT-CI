@@ -36,8 +36,12 @@ UPDATE_PACKAGE() {
 
 	# 处理克隆的仓库
 	if [[ "$PKG_SPECIAL" == "pkg" ]]; then
-		find $REPO_PATH/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
-		rm -rf $REPO_PATH
+		# 先挪到临时目录再提取：若仓库名与包目录同名（如 luci-app-uugamebooster、luci-app-natpierce），
+		# 直接提取后再 rm -rf $REPO_PATH 会把刚复制过去的目录一起删掉
+		local TMP_PATH="./package/.tmp-$REPO_NAME"
+		mv "$REPO_PATH" "$TMP_PATH"
+		find "$TMP_PATH"/*/ -maxdepth 3 -type d -iname "*$PKG_NAME*" -prune -exec cp -rf {} ./package \;
+		rm -rf "$TMP_PATH"
 	fi
 }
 
@@ -91,6 +95,12 @@ UPDATE_PACKAGE "mt5700" "LianXia233/luci-app-mt5700" "main"
 UPDATE_PACKAGE "mt5700m" "LianXia233/luci-app-mt5700m" "main"
 UPDATE_PACKAGE "netmonitor" "LianXia233/luci-app-netmonitor" "main"
 UPDATE_PACKAGE "qmodem-generic" "LianXia233/luci-app-qmodem-generic" "main"
+
+#UA3F：上游要求整仓库克隆到 package/UA3F（Makefile 在 openwrt/ 子目录，编译时引用仓库根的 go.mod）
+UPDATE_PACKAGE "UA3F" "SunBK201/UA3F" "master"
+
+UPDATE_PACKAGE "uugamebooster" "xiaodoudou/luci-app-uugamebooster" "master" "pkg"
+UPDATE_PACKAGE "natpierce" "natpierce/luci-app-natpierce" "main" "pkg"
 
 #更新软件包版本
 UPDATE_VERSION() {

@@ -44,3 +44,32 @@ FIX "mini-diskmanager" "$PACKAGE_PATH/luci-app-mini-diskmanager" sed -i "s/servi
 #修改natmapt菜单位置
 FIX "natmapt" "$PACKAGE_PATH/luci-app-natmapt" sed -i "s/network/services/g" \
 	"$PACKAGE_PATH/luci-app-natmapt/root/usr/share/luci/menu.d/luci-app-natmap.json"
+
+#修正uugamebooster依赖名：新版目标里libstdcpp6已并入libstdcpp，否则make报 dependency does not exist
+FIX "uugamebooster-libstdcpp" "$PACKAGE_PATH/luci-app-uugamebooster" sed -i \
+	"s/+libstdcpp6/+libstdcpp/g" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/Makefile"
+
+#修正uugamebooster脚本权限：源仓库里uu-detect/uu-view等是644，cp -p会保留权限，不补执行位会导致插件跑不起来
+FIX "uugamebooster-exec" "$PACKAGE_PATH/luci-app-uugamebooster" chmod +x \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/etc/init.d/uuplugin" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/usr/libexec/uuplugin/uu-detect" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/usr/libexec/uuplugin/uu-view" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/usr/libexec/uuplugin/uu-openclash-sync" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/usr/libexec/uuplugin/uu-ua3f-sync" \
+	"$PACKAGE_PATH/luci-app-uugamebooster/root/usr/libexec/uuplugin/xt/iptables"
+
+#删除uugamebooster的postinst：打镜像时会在宿主机root下执行chmod，目标文件不存在会直接让make失败
+FIX "uugamebooster-postinst" "$PACKAGE_PATH/luci-app-uugamebooster" sed -i \
+	'/^define Package\/.*\/postinst$/,/^endef$/d' \
+	"$PACKAGE_PATH/luci-app-uugamebooster/Makefile"
+
+#删除natpierce缺失的htdocs安装段：上游仓库根本没有htdocs目录，$(CP) ./htdocs/* 会报 cannot stat
+FIX "natpierce-htdocs" "$PACKAGE_PATH/luci-app-natpierce" sed -i \
+	'/INSTALL_DIR) \$(1)\/www\//d; /CP) \.\/htdocs/d' \
+	"$PACKAGE_PATH/luci-app-natpierce/Makefile"
+
+#删除natpierce的postinst：打镜像时会在宿主机执行 /usr/share/natpierce/update.sh，文件不存在导致安装失败
+FIX "natpierce-postinst" "$PACKAGE_PATH/luci-app-natpierce" sed -i \
+	'/^define Package\/luci-app-natpierce\/postinst$/,/^endef$/d' \
+	"$PACKAGE_PATH/luci-app-natpierce/Makefile"
